@@ -40,6 +40,8 @@ const verifyJWT = (req, res, next) => {
         if (error) {
             return res.status(403).send({ error: true, message: 'unauthorized access' })
         }
+        req.decoded = decoded;
+        next()
     })
 }
 
@@ -61,7 +63,7 @@ async function run() {
             const user = req.body;
             console.log(user);
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '1h'
+                expiresIn: 5
             })
             console.log(token)
             res.send({ token })
@@ -94,6 +96,12 @@ async function run() {
 
         // bookings 
         app.get('/bookings', verifyJWT, async (req, res) => {
+            const decoded = req.decoded
+            console.log('Came back after verify', decoded)
+
+            if (decoded.email !== req.query.email) {
+                return res.status(403).send({ error: 1, message: 'forbidden access' })
+            }
 
             // console.log(req.headers.authorization);
 
